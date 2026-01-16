@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { Menu, X, Download } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Button } from "./ui/button";
@@ -14,129 +14,178 @@ const navItems = [
   { label: "Contact", href: "#contact", id: "contact" },
 ];
 
+/* Magnetic Hover Wrapper */
+const Magnetic = ({ children }) => (
+  <motion.div
+    whileHover={{ x: 2, y: -2 }}
+    transition={{ type: "spring", stiffness: 300, damping: 15 }}
+  >
+    {children}
+  </motion.div>
+);
+
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const sectionIds = useMemo(() => navItems.map((item) => item.id), []);
   const activeSection = useActiveSection(sectionIds, 120);
 
+  /* Scroll-based animation */
+  const { scrollY } = useScroll();
+  const scale = useTransform(scrollY, [0, 100], [1, 0.96]);
+  const padding = useTransform(scrollY, [0, 100], ["1.5rem", "0.9rem"]);
+  const shadow = useTransform(
+    scrollY,
+    [0, 100],
+    ["0 0 0 rgba(0,0,0,0)", "0 15px 40px rgba(0,0,0,0.2)"]
+  );
+
   return (
     <motion.header
-      initial={{ y: -100, opacity: 0 }}
+      initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="fixed top-0 left-0 right-0 z-50 px-4 py-4"
+      className="fixed top-0 inset-x-0 z-50 px-4"
     >
-      <nav className="max-w-6xl mx-auto glass-card rounded-2xl px-6 py-4">
-        <div className="flex items-center justify-between">
-          <motion.a
-            href="#home"
-            className="font-display text-xl font-bold"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            HIMANSHU<span className="gradient-text">.</span>
-          </motion.a>
+      {/* Gradient Border Glow */}
+      <motion.div style={{ scale }} className="relative max-w-6xl mx-auto mt-4">
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r 
+          from-primary via-purple-500 to-pink-500 blur-lg opacity-60 animate-gradient" />
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
-            {navItems.map((item, index) => {
-              const isActive = activeSection === item.id;
-              return (
-                <motion.a
-                  key={item.label}
-                  href={item.href}
-                  className={cn(
-                    "text-sm font-medium transition-colors relative group",
-                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                  )}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 + 0.3 }}
-                >
-                  {item.label}
-                  <motion.span 
-                    className="absolute -bottom-1 left-0 h-0.5 bg-primary rounded-full"
-                    initial={false}
-                    animate={{ 
-                      width: isActive ? "100%" : "0%",
-                      opacity: isActive ? 1 : 0
-                    }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                  />
-                  <span className={cn(
-                    "absolute -bottom-1 left-0 w-0 h-0.5 bg-primary/50 transition-all duration-300 rounded-full",
-                    !isActive && "group-hover:w-full"
-                  )} />
-                </motion.a>
-              );
-            })}
-          </div>
+        <motion.nav
+          style={{ padding, boxShadow: shadow }}
+          className="relative rounded-2xl bg-background/80 backdrop-blur-xl 
+          border border-border/50 px-6"
+        >
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <Magnetic>
+              <motion.a
+                href="#home"
+                className="font-display text-xl font-bold tracking-wide"
+                whileTap={{ scale: 0.95 }}
+              >
+                HIMANSHU
+                <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                  .
+                </span>
+              </motion.a>
+            </Magnetic>
 
-          <div className="hidden md:flex items-center gap-3">
-            <ThemeToggle />
-            <Button variant="hero" size="default" asChild>
-              <a href="https://docs.google.com/document/d/1PkiuD3HtuQh9x7N1knalj0Q_SF-0kKFhTxg66TSjMts/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
-                <Download className="w-4 h-4" />
-                Resume
-              </a>
-            </Button>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {/* Mobile Nav */}
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden pt-4 pb-2"
-          >
-            <div className="flex flex-col gap-4">
+            {/* Desktop Nav */}
+            <div className="relative hidden md:flex items-center gap-8">
               {navItems.map((item) => {
                 const isActive = activeSection === item.id;
                 return (
-                  <a
+                  <motion.a
                     key={item.label}
                     href={item.href}
                     className={cn(
-                      "text-sm font-medium transition-colors flex items-center gap-2",
-                      isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                      "relative text-sm font-medium transition-colors",
+                      isActive
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
-                    onClick={() => setIsOpen(false)}
+                    whileHover={{ y: -2 }}
                   >
+                    {item.label}
+
                     {isActive && (
                       <motion.span
-                        layoutId="mobile-active-indicator"
-                        className="w-1.5 h-1.5 rounded-full bg-primary"
-                        transition={{ duration: 0.3 }}
+                        layoutId="nav-indicator"
+                        className="absolute -bottom-2 left-0 right-0 h-[2px] 
+                        rounded-full bg-gradient-to-r from-primary to-purple-500"
+                        transition={{
+                          type: "spring",
+                          stiffness: 380,
+                          damping: 30,
+                        }}
                       />
                     )}
-                    {item.label}
-                  </a>
+                  </motion.a>
                 );
               })}
-              <div className="flex items-center gap-3">
-                <ThemeToggle />
-                <Button variant="hero" size="default" asChild className="flex-1">
-                  <a href="https://docs.google.com/document/d/1PkiuD3HtuQh9x7N1knalj0Q_SF-0kKFhTxg66TSjMts/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
-                    <Download className="w-4 h-4" />
+            </div>
+
+            {/* Desktop Right */}
+            <div className="hidden md:flex items-center gap-3">
+              <ThemeToggle />
+              <Magnetic>
+                <Button variant="hero" asChild>
+                  <a
+                    href="https://docs.google.com/document/d/1PkiuD3HtuQh9x7N1knalj0Q_SF-0kKFhTxg66TSjMts/edit?usp=sharing"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Download className="w-4 h-4 mr-1" />
                     Resume
                   </a>
                 </Button>
-              </div>
+              </Magnetic>
             </div>
-          </motion.div>
-        )}
-      </nav>
+
+            {/* Mobile Toggle */}
+            <button
+              className="md:hidden p-2 rounded-lg hover:bg-muted transition"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? <X /> : <Menu />}
+            </button>
+          </div>
+
+          {/* Mobile Menu */}
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="md:hidden mt-4 overflow-hidden"
+              >
+                <div className="flex flex-col gap-4">
+                  {navItems.map((item) => {
+                    const isActive = activeSection === item.id;
+                    return (
+                      <motion.a
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setIsOpen(false)}
+                        whileTap={{ scale: 0.96 }}
+                        className={cn(
+                          "flex items-center gap-2 text-sm font-medium px-2 py-1 rounded-md",
+                          isActive
+                            ? "text-primary bg-primary/10"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {isActive && (
+                          <span className="w-2 h-2 rounded-full bg-primary" />
+                        )}
+                        {item.label}
+                      </motion.a>
+                    );
+                  })}
+
+                  <div className="flex items-center gap-3 pt-2">
+                    <ThemeToggle />
+                    <Button variant="hero" asChild className="flex-1">
+                      <a
+                        href="https://docs.google.com/document/d/1PkiuD3HtuQh9x7N1knalj0Q_SF-0kKFhTxg66TSjMts/edit?usp=sharing"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        Resume
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.nav>
+      </motion.div>
     </motion.header>
   );
 };
