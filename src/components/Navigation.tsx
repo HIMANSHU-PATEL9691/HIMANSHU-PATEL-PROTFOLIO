@@ -113,7 +113,7 @@ const Navigation = () => {
               <Magnetic>
                 <Button variant="hero" asChild>
                   <a
-                    href="https://docs.google.com/document/d/1PkiuD3HtuQh9x7N1knalj0Q_SF-0kKFhTxg66TSjMts/edit?usp=sharing"
+                    href="https://drive.google.com/file/d/16gX4B0GAWOSQ27eN9wdabWA76nlX-32a/view?usp=sharing"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
