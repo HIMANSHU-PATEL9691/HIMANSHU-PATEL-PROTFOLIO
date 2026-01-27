@@ -171,7 +171,7 @@ const Navigation = () => {
                     <ThemeToggle />
                     <Button variant="hero" asChild className="flex-1">
                       <a
-                        href="https://docs.google.com/document/d/1PkiuD3HtuQh9x7N1knalj0Q_SF-0kKFhTxg66TSjMts/edit?usp=sharing"
+                        href="https://drive.google.com/file/d/1uS0r0479-QL106cncMKVGSn9u65KWSeM/view?usp=sharing"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
